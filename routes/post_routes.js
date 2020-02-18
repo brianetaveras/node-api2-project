@@ -16,8 +16,18 @@ router.post('/', async (req, res)=>{
     })
 })
 
-router.post('/:id/comments', (req, res)=>{
-    res.json('yoyoyo, you are posting stuff to an endpoint!')
+router.post('/:id/comments', async (req, res)=>{
+    try{
+        
+        const post = await db.findById(req.params.id);
+    
+    
+        if (post){
+            res.status(201).json(await db.insertComment(req.body))
+        }
+    } catch {
+        res.status(500).json('There was an issue adding the comment. Try again later.')
+    }
     
 })
 
@@ -31,13 +41,23 @@ router.get('/', async (req, res)=>{
 
 }
 )
-router.get('/:id', (req, res)=>{
-    res.json('yoyoyo, soy un post!')
+router.get('/:id', async (req, res)=>{
+    try{
+        res.status(201).json(await db.findById(req.params.id))
+    } catch {
+        res.status(500).json({
+            message: "Error while fetching the resource. Try again later!"
+        })
+    }
     
 })
 
-router.get('/:id/comments', (req, res)=>{
-    res.json('yoyoyo, soy un post!')
+router.get('/:id/comments', async (req, res)=>{
+    try{
+        res.json(await db.findPostComments(req.params.id))
+    } catch {
+        res.json({message: "There was an error while fetching the comments. Try again later."})
+    }
     
 })
 
