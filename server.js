@@ -1,16 +1,14 @@
 const express = require('express');
-const db = require('./data/db');
 const server = express();
+const postRoutes = require('./routes/post_routes');
 
 server.use(express.json())
 
+server.use('/api/posts', postRoutes)
 
 server.get('/', (req, res)=>{
     res.json('Welcome to the blgos API!')
 })
-
-
-
 
 server.listen(4001, () => {
     console.log(
