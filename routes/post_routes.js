@@ -31,28 +31,26 @@ router.post('/:id/comments', async (req, res) => {
             res.status(201).json(await db.insertComment(req.body))
         }
     } catch {
-        res.status(500).json('Please provide text for the comment')
+        res.status(500).json('There was an error while adding your comment')
     }
 
 })
 
 router.get('/', async (req, res) => {
     try {
-        const posts = await db.find()
-        res.json(posts)
+        res.json(await db.find())
     } catch (err) {
         res.status(500).json({ message: 'There was an error while getting the post list. Contact the Administrator.' })
     }
 
-}
-)
-router.get('/:id', async (req, res) => {
+});
+router.get('/:id', async (req, res) => {    
     try {
         const post = await db.findById(req.params.id);
         if (post) {
             return res.status(201).json(post);
         }
-        res.status(404).json({ message: "The user was not found." })
+        res.status(404).json({ message: "The post was not found." })
 
     } catch {
         res.status(500).json({
@@ -65,7 +63,7 @@ router.get('/:id', async (req, res) => {
 router.get('/:id/comments', async (req, res) => {
     try {
         const post = await db.findById(req.params.id);
-        if (post){
+        if (post.length){
             return res.json(await db.findPostComments(req.params.id))
         }
         res.status(404).json({
@@ -78,13 +76,37 @@ router.get('/:id/comments', async (req, res) => {
 })
 
 
-router.delete('/:id', (req, res) => {
-    res.json('yoyoyo, soy un post!')
+router.delete('/:id', async (req, res) => {
+
+    try{
+        const post = await db.findById(req.params.id);
+        if(post){
+            await db.remove(req.params.id);
+            return res.json({message: 'Deleted'})
+        }
+
+        res.status(404).json({message: "You are trying to delete something that doesn't exist :("})
+
+    } catch(err) {
+        console.log(err)
+        res.status(500).json({message: "There was an internal server error. Contact the admin"})
+    }
+
+
 
 })
 
-router.put('/:id', (req, res) => {
-    res.json('yoyoyo, soy un post!')
+router.put('/:id', async (req, res) => {
+    try {
+        if(!req.body.title || !req.body.contents){
+            return res.status(400).json({message: "Request invalid. Please make sure all fields are sent"})
+        } 
+        const post = await db.findById(req.params.id);
+        post ? res.json(await db.update(req.params.id, req.body)) : res.status(404).json({message: "The post you are trying to update doesn't exist"})
+
+    } catch {
+
+    }
 
 })
 
